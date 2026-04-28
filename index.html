@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agent Admin Dashboard</title>
+  <script>
+    tailwind = { config: { darkMode: 'class' } };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .focus-ring:focus-visible {
+      outline: 2px solid #0ea5e9;
+      outline-offset: 2px;
+    }
+
+    .panel-gradient {
+      background-image: radial-gradient(circle at 0% 0%, rgba(14, 165, 233, 0.18), transparent 38%),
+                        radial-gradient(circle at 100% 100%, rgba(2, 132, 199, 0.12), transparent 36%);
+    }
+
+    .slide-enter {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 220ms ease, opacity 220ms ease;
+    }
+
+    .slide-enter.open {
+      max-height: 220px;
+      opacity: 1;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 999px;
+    }
+
+    .chart-bar {
+      background: linear-gradient(180deg, rgba(14, 165, 233, 0.9), rgba(2, 132, 199, 0.55));
+    }
+
+    .dark .chart-bar {
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.9), rgba(14, 116, 144, 0.6));
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
+  <div class="min-h-full lg:grid lg:grid-cols-[260px_1fr]">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full border-r border-slate-200 bg-white panel-gradient transition-transform duration-300 lg:static lg:translate-x-0 dark:border-slate-800 dark:bg-slate-900">
+      <div class="h-full flex flex-col">
+        <div class="p-5 border-b border-slate-200 dark:border-slate-800">
+          <h1 class="text-lg font-bold tracking-tight">AgentHub Admin</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Control center for AI operations</p>
+        </div>
+        <nav class="p-3 space-y-1" aria-label="Primary">
+          <button data-nav="dashboard" class="nav-link focus-ring w-full rounded-lg px-3 py-2 text-left text-sm font-medium">Dashboard</button>
+          <button data-nav="agents" class="nav-link focus-ring w-full rounded-lg px-3 py-2 text-left text-sm font-medium">Agent Management</button>
+          <button data-nav="skills" class="nav-link focus-ring w-full rounded-lg px-3 py-2 text-left text-sm font-medium">Skills Catalog</button>
+          <button data-nav="contracts" class="nav-link focus-ring w-full rounded-lg px-3 py-2 text-left text-sm font-medium">Agent Contracts</button>
+          <button data-nav="errors" class="nav-link focus-ring w-full rounded-lg px-3 py-2 text-left text-sm font-medium">Error Log</button>
+          <button data-nav="settings" class="nav-link focus-ring w-full rounded-lg px-3 py-2 text-left text-sm font-medium">Settings</button>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="min-w-0">
+      <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <button id="menuToggle" class="focus-ring rounded-lg border border-slate-300 px-3 py-2 text-sm lg:hidden dark:border-slate-700">Menu</button>
+            <h2 id="pageTitle" class="text-sm sm:text-base font-semibold">Dashboard</h2>
+          </div>
+          <button id="themeToggle" class="focus-ring rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-slate-700" aria-label="Toggle light dark mode">
+            Toggle theme
+          </button>
+        </div>
+      </header>
+
+      <main class="p-4 sm:p-6">
+        <section data-section="dashboard" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Revenue Generated</p>
+              <p class="mt-2 text-2xl font-bold">$24,300</p>
+              <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Current month</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Discount & Coupon Losses</p>
+              <p class="mt-2 text-2xl font-bold">$1,850</p>
+              <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">Value lost</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Active Agents</p>
+              <p class="mt-2 text-2xl font-bold">142</p>
+              <p class="text-xs text-sky-600 dark:text-sky-400 mt-1">Across client portfolios</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Flagged Agents</p>
+              <p class="mt-2 text-2xl font-bold">7</p>
+              <p class="text-xs text-rose-600 dark:text-rose-400 mt-1">Failing agents</p>
+            </article>
+          </div>
+
+          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex items-center justify-between gap-2 mb-4">
+              <h3 class="font-semibold">Weekly Activity Chart</h3>
+              <span class="text-xs rounded-full border border-slate-200 px-2 py-1 text-slate-500 dark:border-slate-700 dark:text-slate-300">Skeleton Preview</span>
+            </div>
+            <div class="h-64 rounded-lg border border-dashed border-slate-300 p-4 dark:border-slate-700">
+              <div class="h-full flex items-end justify-between gap-3" aria-hidden="true">
+                <div class="chart-bar w-full rounded-t-md" style="height: 42%"></div>
+                <div class="chart-bar w-full rounded-t-md" style="height: 60%"></div>
+                <div class="chart-bar w-full rounded-t-md" style="height: 37%"></div>
+                <div class="chart-bar w-full rounded-t-md" style="height: 75%"></div>
+                <div class="chart-bar w-full rounded-t-md" style="height: 52%"></div>
+                <div class="chart-bar w-full rounded-t-md" style="height: 68%"></div>
+                <div class="chart-bar w-full rounded-t-md" style="height: 49%"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section data-section="agents" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold">Agents</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Click a row to expand skills</p>
+          </div>
+          <div id="agentsList" class="mt-4 space-y-3"></div>
+        </section>
+
+        <section data-section="skills" class="hidden space-y-4">
+          <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h3 class="font-semibold">What are platform skills?</h3>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Skills are reusable capabilities assigned to agents such as web search, data retrieval, and content workflows. This catalog helps teams discover overlap, identify underused abilities, and remove outdated capabilities safely.</p>
+          </article>
+          <div id="skillsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+          <div id="skillsEmpty" class="hidden rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-300">No skills remain in the catalog.</div>
+        </section>
+
+        <section data-section="contracts" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 class="font-semibold">Agent Contract Ledger</h3>
+          <div class="mt-4 overflow-x-auto scrollbar-thin">
+            <table class="min-w-[860px] w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-slate-700">
+                  <th class="py-2 pr-4">Client Name</th>
+                  <th class="py-2 pr-4">Agent Name</th>
+                  <th class="py-2 pr-4">Contracted Skills</th>
+                  <th class="py-2 pr-4">Start Date</th>
+                  <th class="py-2 pr-4">End Date</th>
+                  <th class="py-2 pr-4">Status</th>
+                  <th class="py-2 pr-4">Total Paid</th>
+                  <th class="py-2">Action</th>
+                </tr>
+              </thead>
+              <tbody id="contractsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section data-section="errors" class="hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 class="font-semibold">System Diagnostics</h3>
+          <div class="mt-4 overflow-x-auto scrollbar-thin">
+            <table class="min-w-[920px] w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-slate-700">
+                  <th class="py-2 pr-4">Timestamp</th>
+                  <th class="py-2 pr-4">Agent</th>
+                  <th class="py-2 pr-4">Error Type</th>
+                  <th class="py-2 pr-4">Description</th>
+                  <th class="py-2 pr-4">Severity</th>
+                  <th class="py-2 pr-4">State</th>
+                  <th class="py-2">Action</th>
+                </tr>
+              </thead>
+              <tbody id="errorsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section data-section="settings" class="hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 class="font-semibold">Settings</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Workspace-level controls for notification routing, alert thresholds, and agent policy defaults can be configured here in a future milestone.</p>
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <article class="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+              <h4 class="font-medium">Alert Strategy</h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Critical errors: immediate delivery. Warning and below: daily digest.</p>
+            </article>
+            <article class="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+              <h4 class="font-medium">Policy Guardrails</h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Default system prompt governance and model fallback order placeholder.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="overlay" class="fixed inset-0 z-40 hidden bg-slate-950/40 lg:hidden"></div>
+
+  <div id="modalRoot" class="hidden fixed inset-0 z-50 bg-slate-950/55 p-4 sm:p-6">
+    <div class="h-full w-full flex items-center justify-center">
+      <section id="modalCard" role="dialog" aria-modal="true" class="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+        <div class="flex items-start justify-between gap-3">
+          <h3 id="modalTitle" class="font-semibold">Details</h3>
+          <button id="modalClose" class="focus-ring rounded-lg border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700">Close</button>
+        </div>
+        <div id="modalContent" class="mt-4 text-sm text-slate-700 dark:text-slate-200"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      currentSection: 'dashboard',
+      dropdownOpenId: null,
+      modal: { open: false, contentType: null, payload: null, trigger: null },
+      agents: [
+        {
+          id: 'ag-1',
+          name: 'Nova Prospecting Agent',
+          owner: 'Acme Retail',
+          status: 'active',
+          systemPrompt: 'Prioritize high-intent leads, summarize objections, and escalate if confidence score < 0.72.',
+          skills: ['Lead Qualification', 'CRM Update', 'Email Drafting']
+        },
+        {
+          id: 'ag-2',
+          name: 'Aster Compliance Auditor',
+          owner: 'Bluefin Health',
+          status: 'failing',
+          systemPrompt: 'Review policy docs and mark non-compliance findings with citation and impact score.',
+          skills: ['Policy Parsing', 'Anomaly Detection', 'Report Generation']
+        },
+        {
+          id: 'ag-3',
+          name: 'Orbit Support Assistant',
+          owner: 'Northwind SaaS',
+          status: 'inactive',
+          systemPrompt: 'Resolve common support tickets using approved responses and gather CSAT sentiment.',
+          skills: ['Knowledge Search', 'Ticket Routing', 'Sentiment Tagging']
+        },
+        {
+          id: 'ag-4',
+          name: 'Helix Content Strategist',
+          owner: 'Sunset Media',
+          status: 'active',
+          systemPrompt: 'Propose campaign-ready drafts aligned with channel constraints and brand voice profile.',
+          skills: ['Keyword Research', 'Outline Generation', 'Multi-Channel Adaptation']
+        }
+      ],
+      expandedAgents: new Set(),
+      skills: [
+        { id: 'sk-1', name: 'Web Search', description: 'Retrieves current web references and summaries.', usedBy: 7 },
+        { id: 'sk-2', name: 'Data Retrieval', description: 'Fetches structured records from approved sources.', usedBy: 11 },
+        { id: 'sk-3', name: 'Report Composer', description: 'Builds readable narratives from metrics and events.', usedBy: 5 },
+        { id: 'sk-4', name: 'File Analyzer', description: 'Parses docs, extracts entities, and flags anomalies.', usedBy: 4 },
+        { id: 'sk-5', name: 'Task Scheduler', description: 'Handles recurring automation workflows and reminders.', usedBy: 9 }
+      ],
+      contracts: [
+        {
+          id: 'ct-1',
+          client: 'Acme Retail',
+          agent: 'Nova Prospecting Agent',
+          skills: ['Lead Qualification', 'CRM Update'],
+          startDate: '2026-01-02',
+          endDate: '2026-12-31',
+          status: 'active',
+          pricing: [
+            { item: 'Lead Qualification', amount: 1200 },
+            { item: 'CRM Update', amount: 850 }
+          ]
+        },
+        {
+          id: 'ct-2',
+          client: 'Bluefin Health',
+          agent: 'Aster Compliance Auditor',
+          skills: ['Policy Parsing', 'Report Generation'],
+          startDate: '2025-03-15',
+          endDate: '2026-03-15',
+          status: 'past',
+          pricing: [
+            { item: 'Policy Parsing', amount: 1800 },
+            { item: 'Report Generation', amount: 950 }
+          ]
+        },
+        {
+          id: 'ct-3',
+          client: 'Northwind SaaS',
+          agent: 'Orbit Support Assistant',
+          skills: ['Knowledge Search', 'Ticket Routing', 'Sentiment Tagging'],
+          startDate: '2026-02-01',
+          endDate: '2026-11-30',
+          status: 'active',
+          pricing: [
+            { item: 'Knowledge Search', amount: 900 },
+            { item: 'Ticket Routing', amount: 600 },
+            { item: 'Sentiment Tagging', amount: 450 }
+          ]
+        },
+        {
+          id: 'ct-4',
+          client: 'Sunset Media',
+          agent: 'Helix Content Strategist',
+          skills: ['Keyword Research', 'Multi-Channel Adaptation'],
+          startDate: '2025-06-10',
+          endDate: '2026-01-10',
+          status: 'past',
+          pricing: [
+            { item: 'Keyword Research', amount: 700 },
+            { item: 'Multi-Channel Adaptation', amount: 1100 }
+          ]
+        },
+        {
+          id: 'ct-5',
+          client: 'Vertex Mobility',
+          agent: 'Atlas Routing Analyst',
+          skills: ['ETA Modeling', 'Anomaly Alerts'],
+          startDate: '2026-04-01',
+          endDate: '2027-03-31',
+          status: 'active',
+          pricing: [
+            { item: 'ETA Modeling', amount: 1600 },
+            { item: 'Anomaly Alerts', amount: 780 }
+          ]
+        }
+      ],
+      errors: [
+        {
+          id: 'er-1',
+          timestamp: '2026-04-27 08:14:22 UTC',
+          agent: 'Aster Compliance Auditor',
+          type: 'Timeout',
+          description: 'Document parsing job exceeded 30s execution limit.',
+          severity: 'critical',
+          resolved: false,
+          trace: `Traceback (most recent call last):\n  File "runner.py", line 112, in execute\n    raise TimeoutError("Execution timed out")\nTimeoutError: Execution timed out`,
+          metadata: { requestId: 'REQ-4A2C9', model: 'gpt-4.1', node: 'worker-03' }
+        },
+        {
+          id: 'er-2',
+          timestamp: '2026-04-27 10:52:03 UTC',
+          agent: 'Nova Prospecting Agent',
+          type: 'Auth',
+          description: 'CRM token refresh failed with invalid_grant.',
+          severity: 'warning',
+          resolved: false,
+          trace: `Error: OAuth refresh failed\ncode=invalid_grant\nprovider=crm-v2\nretry=false`,
+          metadata: { requestId: 'REQ-C9201', model: 'gpt-4.1-mini', node: 'api-02' }
+        },
+        {
+          id: 'er-3',
+          timestamp: '2026-04-27 11:08:41 UTC',
+          agent: 'Orbit Support Assistant',
+          type: 'Validation',
+          description: 'Ticket payload missing required locale field.',
+          severity: 'minor',
+          resolved: true,
+          trace: `ValidationError: field \"locale\" is required\ninput_path=ticket.customer.preferences`,
+          metadata: { requestId: 'REQ-88A11', model: 'gpt-4.1-mini', node: 'api-01' }
+        },
+        {
+          id: 'er-4',
+          timestamp: '2026-04-27 13:23:19 UTC',
+          agent: 'Helix Content Strategist',
+          type: 'Rate Limit',
+          description: 'Content channel API returned 429 for 4 consecutive retries.',
+          severity: 'warning',
+          resolved: false,
+          trace: `HTTPError: 429 Too Many Requests\nretry_count=4\nbackoff=exponential`,
+          metadata: { requestId: 'REQ-0F7B2', model: 'gpt-4.1', node: 'worker-06' }
+        },
+        {
+          id: 'er-5',
+          timestamp: '2026-04-27 16:47:58 UTC',
+          agent: 'Atlas Routing Analyst',
+          type: 'Data Source',
+          description: 'Telemetry stream disconnected for region us-east-2.',
+          severity: 'critical',
+          resolved: false,
+          trace: `StreamClosedError: source terminated unexpectedly\nsource=telematics-kafka\npartition=17`,
+          metadata: { requestId: 'REQ-7C0ED', model: 'gpt-4.1', node: 'ingest-02' }
+        },
+        {
+          id: 'er-6',
+          timestamp: '2026-04-27 18:02:11 UTC',
+          agent: 'Nova Prospecting Agent',
+          type: 'Info',
+          description: 'Fallback template applied after low confidence result.',
+          severity: 'info',
+          resolved: true,
+          trace: `Info: confidence score below threshold\nscore=0.54\naction=fallback_template`,
+          metadata: { requestId: 'REQ-B17D3', model: 'gpt-4.1-mini', node: 'worker-01' }
+        }
+      ]
+    };
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const pageTitle = document.getElementById('pageTitle');
+    const sectionNodes = [...document.querySelectorAll('[data-section]')];
+    const navNodes = [...document.querySelectorAll('[data-nav]')];
+    const modalRoot = document.getElementById('modalRoot');
+    const modalCard = document.getElementById('modalCard');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+
+    let focusTrapCleanup = null;
+
+    function statusBadge(status) {
+      const map = {
+        active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+        inactive: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+        failing: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'
+      };
+      return map[status] || map.inactive;
+    }
+
+    function severityBadge(level) {
+      const map = {
+        critical: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+        warning: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+        minor: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+        info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+      };
+      return map[level] || map.info;
+    }
+
+    function currency(amount) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function setSection(sectionId) {
+      state.currentSection = sectionId;
+      sectionNodes.forEach((node) => {
+        node.classList.toggle('hidden', node.dataset.section !== sectionId);
+      });
+      navNodes.forEach((node) => {
+        const isActive = node.dataset.nav === sectionId;
+        node.classList.toggle('bg-sky-600', isActive);
+        node.classList.toggle('text-white', isActive);
+        node.classList.toggle('dark:bg-sky-500', isActive);
+        node.classList.toggle('dark:text-slate-950', isActive);
+        node.classList.toggle('text-slate-700', !isActive);
+        node.classList.toggle('hover:bg-slate-100', !isActive);
+        node.classList.toggle('dark:text-slate-200', !isActive);
+        node.classList.toggle('dark:hover:bg-slate-800', !isActive);
+        node.setAttribute('aria-current', isActive ? 'page' : 'false');
+      });
+      const activeLabel = navNodes.find((n) => n.dataset.nav === sectionId)?.textContent || 'Dashboard';
+      pageTitle.textContent = activeLabel;
+      closeSidebar();
+      closeAllDropdowns();
+    }
+
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      overlay.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      overlay.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    function closeAllDropdowns() {
+      state.dropdownOpenId = null;
+      renderAgents();
+      renderSkills();
+    }
+
+    function enableFocusTrap(container, initialFocus) {
+      const selectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      const elements = [...container.querySelectorAll(selectors)].filter((el) => !el.hasAttribute('disabled'));
+      const first = elements[0] || container;
+      const last = elements[elements.length - 1] || container;
+
+      function trapHandler(event) {
+        if (event.key !== 'Tab') return;
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+
+      container.addEventListener('keydown', trapHandler);
+      (initialFocus || first).focus();
+
+      return () => {
+        container.removeEventListener('keydown', trapHandler);
+      };
+    }
+
+    function openModal(title, htmlContent, triggerElement) {
+      state.modal = { open: true, contentType: title, payload: htmlContent, trigger: triggerElement || null };
+      modalTitle.textContent = title;
+      modalContent.innerHTML = htmlContent;
+      modalRoot.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      focusTrapCleanup = enableFocusTrap(modalCard, modalClose);
+    }
+
+    function closeModal() {
+      state.modal.open = false;
+      modalRoot.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+      if (focusTrapCleanup) {
+        focusTrapCleanup();
+        focusTrapCleanup = null;
+      }
+      if (state.modal.trigger) {
+        state.modal.trigger.focus();
+      }
+      state.modal = { open: false, contentType: null, payload: null, trigger: null };
+    }
+
+    function renderAgents() {
+      const container = document.getElementById('agentsList');
+      container.innerHTML = '';
+
+      state.agents.forEach((agent) => {
+        const isExpanded = state.expandedAgents.has(agent.id);
+        const card = document.createElement('article');
+        card.className = 'rounded-lg border border-slate-200 dark:border-slate-700';
+
+        const row = document.createElement('div');
+        row.className = 'px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3';
+
+        row.innerHTML = `
+          <button data-expand="${agent.id}" class="focus-ring text-left flex-1">
+            <p class="font-medium">${agent.name}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Owner: ${agent.owner}</p>
+          </button>
+          <div class="flex items-center gap-2 self-end md:self-auto">
+            <span class="rounded-full px-2.5 py-1 text-xs font-medium capitalize ${statusBadge(agent.status)}">${agent.status}</span>
+            <div class="relative">
+              <button data-dropdown="${agent.id}" class="focus-ring rounded-lg border border-slate-300 px-2 py-1 text-xs dark:border-slate-700">Actions</button>
+              <div data-dropdown-menu="${agent.id}" class="${state.dropdownOpenId === agent.id ? '' : 'hidden'} absolute right-0 mt-1 w-36 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800 z-10">
+                <button data-configure="${agent.id}" class="focus-ring block w-full rounded px-2 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-700">Configure</button>
+                <button data-delete-agent="${agent.id}" class="focus-ring block w-full rounded px-2 py-1.5 text-left text-xs text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/30">Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const details = document.createElement('div');
+        details.className = `slide-enter ${isExpanded ? 'open' : ''} px-4 pb-4`;
+        details.innerHTML = `
+          <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Skills</p>
+          <div class="flex flex-wrap gap-2">
+            ${agent.skills.map((skill) => `<span class="rounded-full border border-slate-300 px-2 py-1 text-xs dark:border-slate-600">${skill}</span>`).join('')}
+          </div>
+        `;
+
+        card.appendChild(row);
+        card.appendChild(details);
+        container.appendChild(card);
+      });
+    }
+
+    function renderSkills() {
+      const grid = document.getElementById('skillsGrid');
+      const empty = document.getElementById('skillsEmpty');
+      grid.innerHTML = '';
+
+      if (state.skills.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+
+      state.skills.forEach((skill) => {
+        const card = document.createElement('article');
+        card.className = 'rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900';
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <h4 class="font-medium">${skill.name}</h4>
+            <div class="relative">
+              <button data-skill-menu="${skill.id}" class="focus-ring rounded-lg border border-slate-300 px-2 py-1 text-xs dark:border-slate-700" aria-label="Open skill actions">⋮</button>
+              <div class="${state.dropdownOpenId === skill.id ? '' : 'hidden'} absolute right-0 mt-1 w-32 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800 z-10">
+                <button data-view-skill="${skill.id}" class="focus-ring block w-full rounded px-2 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-700">View detail</button>
+                <button data-delete-skill="${skill.id}" class="focus-ring block w-full rounded px-2 py-1.5 text-left text-xs text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/30">Delete</button>
+              </div>
+            </div>
+          </div>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">${skill.description}</p>
+          <p class="mt-3 text-xs text-sky-700 dark:text-sky-300">Used by ${skill.usedBy} agents</p>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function renderContracts() {
+      const body = document.getElementById('contractsBody');
+      body.innerHTML = '';
+
+      state.contracts.forEach((contract) => {
+        const total = contract.pricing.reduce((sum, row) => sum + row.amount, 0);
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-slate-200 dark:border-slate-800';
+        tr.innerHTML = `
+          <td class="py-3 pr-4">${contract.client}</td>
+          <td class="py-3 pr-4">${contract.agent}</td>
+          <td class="py-3 pr-4">
+            <div class="flex flex-wrap gap-1">
+              ${contract.skills.map((skill) => `<span class="rounded-full border border-slate-300 px-2 py-0.5 text-xs dark:border-slate-700">${skill}</span>`).join('')}
+            </div>
+          </td>
+          <td class="py-3 pr-4">${contract.startDate}</td>
+          <td class="py-3 pr-4">${contract.endDate}</td>
+          <td class="py-3 pr-4">
+            <span class="rounded-full px-2.5 py-1 text-xs font-medium ${contract.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}">${contract.status === 'active' ? 'Active' : 'Past'}</span>
+          </td>
+          <td class="py-3 pr-4 font-medium">${currency(total)}</td>
+          <td class="py-3">
+            <button data-contract-detail="${contract.id}" class="focus-ring rounded-lg border border-slate-300 px-2 py-1 text-xs dark:border-slate-700">View</button>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderErrors() {
+      const body = document.getElementById('errorsBody');
+      body.innerHTML = '';
+
+      state.errors.forEach((entry) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-slate-200 dark:border-slate-800';
+        tr.innerHTML = `
+          <td class="py-3 pr-4 ${entry.resolved ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${entry.timestamp}</td>
+          <td class="py-3 pr-4 ${entry.resolved ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${entry.agent}</td>
+          <td class="py-3 pr-4 ${entry.resolved ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${entry.type}</td>
+          <td class="py-3 pr-4 ${entry.resolved ? 'line-through text-slate-400 dark:text-slate-500' : ''}">${entry.description}</td>
+          <td class="py-3 pr-4"><span class="rounded-full px-2.5 py-1 text-xs font-medium capitalize ${severityBadge(entry.severity)}">${entry.severity}</span></td>
+          <td class="py-3 pr-4">${entry.resolved ? '<span class="text-xs text-emerald-600 dark:text-emerald-400">Resolved</span>' : '<span class="text-xs text-amber-600 dark:text-amber-400">Open</span>'}</td>
+          <td class="py-3">
+            <div class="flex gap-2">
+              <button data-error-detail="${entry.id}" class="focus-ring rounded-lg border border-slate-300 px-2 py-1 text-xs dark:border-slate-700">View detail</button>
+              <button data-error-resolve="${entry.id}" class="focus-ring rounded-lg border border-emerald-300 px-2 py-1 text-xs text-emerald-700 dark:border-emerald-700 dark:text-emerald-300">Mark as Resolved</button>
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderAll() {
+      renderAgents();
+      renderSkills();
+      renderContracts();
+      renderErrors();
+    }
+
+    function agentById(id) {
+      return state.agents.find((agent) => agent.id === id);
+    }
+
+    function contractById(id) {
+      return state.contracts.find((contract) => contract.id === id);
+    }
+
+    function errorById(id) {
+      return state.errors.find((error) => error.id === id);
+    }
+
+    function initTheme() {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) {
+        document.documentElement.classList.add('dark');
+      }
+    }
+
+    document.addEventListener('click', (event) => {
+      const navButton = event.target.closest('[data-nav]');
+      if (navButton) {
+        setSection(navButton.dataset.nav);
+        return;
+      }
+
+      if (event.target.id === 'menuToggle') {
+        openSidebar();
+        return;
+      }
+
+      if (event.target.id === 'themeToggle') {
+        document.documentElement.classList.toggle('dark');
+        return;
+      }
+
+      if (event.target === overlay) {
+        closeSidebar();
+        return;
+      }
+
+      const expandButton = event.target.closest('[data-expand]');
+      if (expandButton) {
+        const id = expandButton.dataset.expand;
+        if (state.expandedAgents.has(id)) {
+          state.expandedAgents.delete(id);
+        } else {
+          state.expandedAgents.add(id);
+        }
+        renderAgents();
+        return;
+      }
+
+      const dropdownButton = event.target.closest('[data-dropdown]');
+      if (dropdownButton) {
+        const id = dropdownButton.dataset.dropdown;
+        state.dropdownOpenId = state.dropdownOpenId === id ? null : id;
+        renderAgents();
+        return;
+      }
+
+      const skillMenuButton = event.target.closest('[data-skill-menu]');
+      if (skillMenuButton) {
+        const id = skillMenuButton.dataset.skillMenu;
+        state.dropdownOpenId = state.dropdownOpenId === id ? null : id;
+        renderSkills();
+        return;
+      }
+
+      const configureButton = event.target.closest('[data-configure]');
+      if (configureButton) {
+        const agent = agentById(configureButton.dataset.configure);
+        if (agent) {
+          openModal(
+            `${agent.name} System Prompt`,
+            `<p class="mb-2 text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Owner: ${agent.owner}</p><pre class="whitespace-pre-wrap rounded-lg bg-slate-100 p-3 text-xs dark:bg-slate-800">${escapeHtml(agent.systemPrompt)}</pre>`,
+            configureButton
+          );
+        }
+        state.dropdownOpenId = null;
+        renderAgents();
+        return;
+      }
+
+      const deleteAgentButton = event.target.closest('[data-delete-agent]');
+      if (deleteAgentButton) {
+        const id = deleteAgentButton.dataset.deleteAgent;
+        state.agents = state.agents.filter((agent) => agent.id !== id);
+        state.expandedAgents.delete(id);
+        state.dropdownOpenId = null;
+        renderAgents();
+        return;
+      }
+
+      const viewSkillButton = event.target.closest('[data-view-skill]');
+      if (viewSkillButton) {
+        const skill = state.skills.find((item) => item.id === viewSkillButton.dataset.viewSkill);
+        if (skill) {
+          openModal(
+            `${skill.name} Detail`,
+            `<p class="text-sm">${skill.description}</p><p class="mt-3 text-xs text-sky-700 dark:text-sky-300">Used by ${skill.usedBy} agents</p>`,
+            viewSkillButton
+          );
+        }
+        state.dropdownOpenId = null;
+        renderSkills();
+        return;
+      }
+
+      const deleteSkillButton = event.target.closest('[data-delete-skill]');
+      if (deleteSkillButton) {
+        const id = deleteSkillButton.dataset.deleteSkill;
+        state.skills = state.skills.filter((skill) => skill.id !== id);
+        state.dropdownOpenId = null;
+        renderSkills();
+        return;
+      }
+
+      const contractDetailButton = event.target.closest('[data-contract-detail]');
+      if (contractDetailButton) {
+        const contract = contractById(contractDetailButton.dataset.contractDetail);
+        if (contract) {
+          const total = contract.pricing.reduce((sum, row) => sum + row.amount, 0);
+          const rows = contract.pricing
+            .map((item) => `<li class="flex justify-between gap-3"><span>${item.item}</span><span class="font-medium">${currency(item.amount)}</span></li>`)
+            .join('');
+          openModal(
+            `${contract.client} Pricing Breakdown`,
+            `<p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Agent: ${contract.agent}</p><ul class="space-y-2">${rows}</ul><div class="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700 flex justify-between"><span class="font-medium">Total</span><span class="font-bold">${currency(total)}</span></div>`,
+            contractDetailButton
+          );
+        }
+        return;
+      }
+
+      const errorDetailButton = event.target.closest('[data-error-detail]');
+      if (errorDetailButton) {
+        const entry = errorById(errorDetailButton.dataset.errorDetail);
+        if (entry) {
+          openModal(
+            `${entry.agent} Error Detail`,
+            `<div class="space-y-2"><p><span class="font-medium">Type:</span> ${entry.type}</p><p><span class="font-medium">Severity:</span> <span class="capitalize">${entry.severity}</span></p><p><span class="font-medium">Request ID:</span> ${entry.metadata.requestId}</p><p><span class="font-medium">Model:</span> ${entry.metadata.model}</p><p><span class="font-medium">Node:</span> ${entry.metadata.node}</p><pre class="mt-3 overflow-auto rounded-lg bg-slate-100 p-3 text-xs font-mono dark:bg-slate-800">${escapeHtml(entry.trace)}</pre></div>`,
+            errorDetailButton
+          );
+        }
+        return;
+      }
+
+      const resolveButton = event.target.closest('[data-error-resolve]');
+      if (resolveButton) {
+        const entry = errorById(resolveButton.dataset.errorResolve);
+        if (entry) {
+          entry.resolved = true;
+          renderErrors();
+        }
+        return;
+      }
+
+      if (event.target === modalRoot || event.target === modalClose) {
+        closeModal();
+        return;
+      }
+
+      if (!event.target.closest('[data-dropdown-menu]') && !event.target.closest('[data-dropdown]') && !event.target.closest('[data-skill-menu]')) {
+        if (state.dropdownOpenId) {
+          state.dropdownOpenId = null;
+          renderAgents();
+          renderSkills();
+        }
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        if (state.modal.open) {
+          closeModal();
+          return;
+        }
+        if (!overlay.classList.contains('hidden')) {
+          closeSidebar();
+          return;
+        }
+        if (state.dropdownOpenId) {
+          state.dropdownOpenId = null;
+          renderAgents();
+          renderSkills();
+        }
+      }
+    });
+
+    initTheme();
+    setSection('dashboard');
+    renderAll();
+  </script>
+</body>
+</html>
